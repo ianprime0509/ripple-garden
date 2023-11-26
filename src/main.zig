@@ -3,11 +3,19 @@ const Allocator = std.mem.Allocator;
 const c = @cImport(@cInclude("raylib.h"));
 
 const Cell = struct {
+    /// Height. Must be between -1.0 and 1.0, inclusive.
     h: f32 = 0.0,
+    /// Velocity.
     v: f32 = 0.0,
+    /// Acceleration. Recomputed on every step.
     a: f32 = 0.0,
+    /// Mass. Higher masses will result in less acceleration from displacement
+    /// (F = ma). Must be greater than 0.0.
     m: f32 = 1.0,
+    /// Viscosity. Higher viscosities will proportionally slow velocity. Must
+    /// not be greater than 1.0.
     visc: f32 = 0.01,
+    /// Hue. Must be between 0.0 (inclusive) and 360.0 (exclusive).
     hue: f32 = 240.0,
 };
 
@@ -108,9 +116,9 @@ const State = struct {
             }
         }
 
-        for (hs, vs, as, ms, viscs) |*h, *v, *a, m, visc| {
-            a.* += -v.* * visc / m;
+        for (hs, vs, as, viscs) |*h, *v, *a, visc| {
             v.* += a.*;
+            v.* -= visc * v.*;
             h.* += v.*;
             h.* = @max(-1.0, @min(h.*, 1.0));
         }
@@ -150,8 +158,8 @@ pub fn main() !void {
                 mouse_y >= 0 and mouse_y < state_height)
             {
                 state.doBrush(MaterialSpec, @intCast(mouse_x), @intCast(mouse_y), 5, makeMaterial, .{
-                    .m = 10.0,
-                    .visc = 0.001,
+                    .m = 100.0,
+                    .visc = 0.0,
                     .hue = 30.0,
                 });
             }
@@ -190,5 +198,6 @@ fn makeMaterial(state: *State, x: usize, y: usize, _: f32, spec: MaterialSpec) v
 }
 
 fn makeRipple(state: *State, x: usize, y: usize, dist: f32, brush_size: usize) void {
-    state.cells.items(.h)[state.index(x, y)] = -1.0 + dist / @as(f32, @floatFromInt(brush_size));
+    const h = &state.cells.items(.h)[state.index(x, y)];
+    h.* = @min(h.*, -1.0 + dist / @as(f32, @floatFromInt(brush_size)));
 }
