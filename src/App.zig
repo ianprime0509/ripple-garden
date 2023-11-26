@@ -17,6 +17,7 @@ materials: [n_materials]Material = .{
     Material.sand,
     Material.heavy,
 },
+brush_size: c_int = 3,
 
 const App = @This();
 
@@ -77,16 +78,16 @@ fn handleInput(app: *App) void {
                 usize,
                 mouse_x,
                 mouse_y,
-                3,
+                @intCast(app.brush_size),
                 makeRipple,
-                3,
+                @intCast(app.brush_size),
             );
         } else {
             app.state.doBrush(
                 Material,
                 mouse_x,
                 mouse_y,
-                5,
+                @intCast(app.brush_size),
                 makeMaterial,
                 app.materials[@intCast(app.selected_tool - 1)],
             );
@@ -129,9 +130,10 @@ fn draw(app: *App) void {
     }
 
     c.GuiSetIconScale(2);
+    defer c.GuiSetIconScale(1);
     const original_text_size = c.GuiGetStyle(c.DEFAULT, c.TEXT_SIZE);
-    defer c.GuiSetStyle(c.DEFAULT, c.TEXT_SIZE, original_text_size);
     c.GuiSetStyle(c.DEFAULT, c.TEXT_SIZE, original_text_size * 2);
+    defer c.GuiSetStyle(c.DEFAULT, c.TEXT_SIZE, original_text_size);
     _ = c.GuiToggleGroup(.{
         .x = 0,
         .y = @floatFromInt(state_height * app.pixel_size),
@@ -147,6 +149,13 @@ fn draw(app: *App) void {
             material.color(0.0),
         );
     }
+
+    _ = c.GuiSpinner(.{
+        .x = @floatFromInt((n_materials + 1) * control_size),
+        .y = @floatFromInt(state_height * app.pixel_size),
+        .height = control_size,
+        .width = 2 * control_size,
+    }, "", &app.brush_size, 1, 20, false);
 }
 
 const Material = struct {
