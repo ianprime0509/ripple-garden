@@ -7,5 +7,9 @@
             .url = "git+https://github.com/raysan5/raylib#5.0",
             .hash = "1220c28847ca8e8756734ae84355802b764c9d9cf4de057dbc6fc2b15c56e726f27b",
         },
+        .raygui = .{
+            .url = "git+https://github.com/raysan5/raygui#4.0",
+            .hash = "1220b64eaeaf55609b3152b64d108ea73981c9689e783bddc68c80e77d275ebac164",
+        },
     },
 }
