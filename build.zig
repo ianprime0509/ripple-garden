@@ -16,6 +16,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
+    ripple_garden.addIncludePath(.{ .path = "src" });
     ripple_garden.addIncludePath(raylib.path("src"));
     ripple_garden.linkLibrary(raylib.artifact("raylib"));
     ripple_garden.addIncludePath(raygui.path("src"));

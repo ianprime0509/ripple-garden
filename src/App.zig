@@ -3,6 +3,8 @@ const assert = std.debug.assert;
 const Allocator = std.mem.Allocator;
 const c = @cImport({
     @cInclude("raylib.h");
+    @cInclude("iconset.rgi.h");
+    @cDefine("RAYGUI_CUSTOM_ICONS", "");
     @cDefine("RAYGUI_IMPLEMENTATION", "");
     @cInclude("raygui.h");
 });
@@ -18,6 +20,9 @@ materials: [n_materials]Material = .{
     Material.heavy,
 },
 brush_size: c_int = 3,
+raining: bool = false,
+rain_frequency: f32 = 0.1,
+rng: std.rand.DefaultPrng,
 
 const App = @This();
 
@@ -42,6 +47,7 @@ fn init(
     return .{
         .state = state,
         .pixel_size = pixel_size,
+        .rng = std.rand.DefaultPrng.init(@bitCast(std.time.timestamp())),
     };
 }
 
@@ -69,7 +75,10 @@ fn shouldClose(_: App) bool {
 }
 
 fn handleInput(app: *App) void {
+    const state_width = app.state.width;
+    const state_height = @divExact(app.state.cells.len, state_width);
     const pixel_size_int: c_int = @intCast(app.pixel_size);
+
     if (c.IsMouseButtonDown(c.MOUSE_BUTTON_LEFT)) {
         const mouse_x = @divFloor(c.GetMouseX(), pixel_size_int);
         const mouse_y = @divFloor(c.GetMouseY(), pixel_size_int);
@@ -97,6 +106,11 @@ fn handleInput(app: *App) void {
         if (c.IsKeyPressed(c.KEY_ZERO + @as(c_int, @intCast(i)))) {
             app.selected_tool = @intCast(i);
         }
+    }
+    if (app.raining and app.rng.random().float(f32) < app.rain_frequency) {
+        const x = app.rng.random().uintLessThan(usize, state_width);
+        const y = app.rng.random().uintLessThan(usize, state_height);
+        app.state.cells.items(.h)[app.state.index(x, y)] = -1.0;
     }
 }
 
@@ -156,6 +170,13 @@ fn draw(app: *App) void {
         .height = control_size,
         .width = 2 * control_size,
     }, "", &app.brush_size, 1, 20, false);
+
+    _ = c.GuiToggle(.{
+        .x = @floatFromInt(state_width * app.pixel_size - control_size),
+        .y = @floatFromInt(state_height * app.pixel_size),
+        .height = control_size,
+        .width = control_size,
+    }, std.fmt.comptimePrint("#{}#", .{c.ICON_RAIN}), &app.raining);
 }
 
 const Material = struct {
