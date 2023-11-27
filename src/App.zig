@@ -114,7 +114,15 @@ fn handleInput(app: *App) void {
     if (app.raining and app.rng.random().float(f32) < app.rain_frequency) {
         const x = app.rng.random().uintLessThan(usize, state_width);
         const y = app.rng.random().uintLessThan(usize, state_height);
-        app.state.cells.items(.h)[app.state.index(x, y)] = -1.0;
+        const size = app.rng.random().uintLessThan(usize, 4);
+        app.state.doBrush(
+            usize,
+            @intCast(x),
+            @intCast(y),
+            @intCast(size),
+            makeRipple,
+            @intCast(size),
+        );
     }
 }
 
