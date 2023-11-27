@@ -82,24 +82,28 @@ fn handleInput(app: *App) void {
     if (c.IsMouseButtonDown(c.MOUSE_BUTTON_LEFT)) {
         const mouse_x = @divFloor(c.GetMouseX(), pixel_size_int);
         const mouse_y = @divFloor(c.GetMouseY(), pixel_size_int);
-        if (app.selected_tool == 0) {
-            app.state.doBrush(
-                usize,
-                mouse_x,
-                mouse_y,
-                @intCast(app.brush_size),
-                makeRipple,
-                @intCast(app.brush_size),
-            );
-        } else {
-            app.state.doBrush(
-                Material,
-                mouse_x,
-                mouse_y,
-                @intCast(app.brush_size),
-                makeMaterial,
-                app.materials[@intCast(app.selected_tool - 1)],
-            );
+        if (mouse_x >= 0 and mouse_x < state_width and
+            mouse_y >= 0 and mouse_y < state_height)
+        {
+            if (app.selected_tool == 0) {
+                app.state.doBrush(
+                    usize,
+                    mouse_x,
+                    mouse_y,
+                    @intCast(app.brush_size),
+                    makeRipple,
+                    @intCast(app.brush_size),
+                );
+            } else {
+                app.state.doBrush(
+                    Material,
+                    mouse_x,
+                    mouse_y,
+                    @intCast(app.brush_size),
+                    makeMaterial,
+                    app.materials[@intCast(app.selected_tool - 1)],
+                );
+            }
         }
     }
     for (0..n_materials + 1) |i| {
